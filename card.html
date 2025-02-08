@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cartes d'Élèves avec QR Code</title>
+  <link href="./assets/css/style.css" rel="stylesheet" />
+<link href="./assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+</head>
+<body>
+<header class="bg-primary text-white text-center py-4">
+<h1>📌 Cartes d'élèves avec QR Code</h1>
+</header>
+
+<main class="container mb-5 pb-3 position-relative">
+<!-- Popups Bootstrap (Toast) -->
+<div class="position-fixed top-0 start-0 end-0 toaster" style="z-index: 1050">
+<div id="toastContainer"></div>
+</div>
+
+<!-- Barre de progression globale -->
+<div id="globalProgressContainer" class="progress" style="height: 5px; display:
+none;">
+<div id="globalProgressBar" class="progress-bar progress-bar-striped
+progress-bar-animated" role="progressbar" style="width: 0%"></div>
+</div>
+
+<div class="row pb-2 g-2 mt-5">
+<div class="col-12 col-md-6 text-center d-flex justify-content-center
+align-items-center">
+<!-- Button to fetch student data -->
+<button id="loadCards" class="btn btn-success">🔄 Charger les cartes</button>
+</div>
+<div class="col-12 col-md-6 text-center p-3">
+<label for="downloadAs" class="form-label">Télécharger :</label>
+<select id="downloadAs" class="form-select bg-success text-white">
+<option value="">-- Sélectionnez une option --</option>
+<option value="asimg">En tant qu'image...</option>
+<option value="aspdf">En tant que document pdf</option>
+</select>
+</div>
+</div>
+<!-- Conteneur pour les cartes -->
+<div class="row py-1 bg-dark border-2 border border-danger mx-1 mt-3
+mb-1
+rounded-3" id="cards-container"></div>
+</main>
+
+<footer class="bg-primary text-white text-center py-3 fixed-bottom">
+<span>© Copyright Card Maker Test App - <strong>Mbmos</strong> 2025</span>
+</footer>
+
+<!-- Load scripts at the end of the body -->
+<script src="./assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!--
+<script
+src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+-->
+<script
+src="./assets/vendor/qrcode/qrcode.min.js"></script>
+<script src="./assets/vendor/papaparse/papaparse.min.js"></script>
+<script src="./assets/js/canvasHelper.js"></script>
+<script src="./assets/js/studentCardHelper.js"></script>
+<script src="./assets/js/script.js"></script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f8f9fa;
+}
+
+header {
+  background-color: #007bff;
+  color: white;
+}
+
+footer {
+  background-color: #007bff;
+  color: white;
+}
+
+canvas {
+  border: 2px solid black;
+  margin: 10px;
+}
+
+.toaster {
+  margin: 1rem;
+}
