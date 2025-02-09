@@ -41,7 +41,7 @@ async function fetchStudentData() {
 }
 
 //Function to generate multiple cards
-/*async function generateStudentCards(data) {
+async function generateStudentCards(data) {
   document.getElementById("cards-container").innerHTML = ""; // Nettoyer avant la boucle
 
   let total = data.length;
@@ -54,30 +54,12 @@ async function fetchStudentData() {
       completed++;
       updateGlobalProgress((completed / total) * 100); // Mise à jour après chaque carte
     } catch (error) {
-      console.error(`Erreur lors du chargement de la carte ${i + 1}:`, error);
       showToast(`Erreur lors du chargement de la carte ${i + 1}`, "danger");
     }
   }
 
   updateGlobalProgress(100); // Finaliser la barre de progression
   showToast("Toutes les cartes sont chargées !", "success");
-}*/
-async function generateStudentCards(data) {
-  document.getElementById("cards-container").innerHTML = ""; // ✅ Nettoyer avant la boucle
-
-  let total = data.length;
-  let completed = 0;
-
-  // 📌 Générer toutes les cartes en parallèle et mettre à jour la progression
-  await Promise.all(data.map(async (student, index) => {
-    try {
-      await generateStudentCard(student);
-      completed++;
-      updateGlobalProgress((completed / total) * 100); // ✅ Mise à jour après chaque carte
-    } catch (error) {
-      showToast(`Erreur lors du chargement de la carte ${index + 1}`, "danger");
-    }
-  }));
 }
 
 // Function to generate a student card
@@ -200,56 +182,82 @@ function updateGlobalProgress(percent) {
   }
 }
 
-// Function to download all cards
-async function downloadCanvas(canvas, filename) {
-  return new Promise(resolve => {
-    try {
-      canvas.toBlob(blob => {
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        a.click();
-        URL.revokeObjectURL(url);
-        resolve();
-      }, 'image/png');
-      showToast('Démarrage du téléchargement...');
-    }catch(error) {
-      showToast(`Erreur lors du téléchargement du canvas : ${error.substring(0, 10)}`, 'danger');
-      console.error('Erreur lors du téléchargement du pdf :', error);
-    }
-  });
-}
-
-// Function to download canvases as pdf file.
+// Fonction pour télécharger toutes les cartes au format PDF
 function downloadAllAsPDF() {
   try {
-    const {
-      jsPDF
-    } = window.jspdf;
-    const doc = new jsPDF('p', 'mm', 'a4');
+    const { jsPDF } = window.jspdf;
+    if (!jsPDF) {
+      throw new Error("La bibliothèque jsPDF n'est pas chargée.");
+    }
+
     const cards = document.querySelectorAll('#cards-container canvas');
 
+    // Vérifier s'il y a des canvas à télécharger
     if (cards.length === 0) {
       showToast("Aucune carte à télécharger.", "warning");
       return;
     }
 
+    // Vérifier que chaque canvas contient des données
+    cards.forEach((canvas, index) => {
+      if (!canvas || !canvas.toDataURL) {
+        throw new Error(`Le canvas ${index + 1} est invalide ou vide.`);
+      }
+    });
+
+    // Créer le PDF
+    const doc = new jsPDF('p', 'mm', 'a4');
     cards.forEach((canvas, index) => {
       const imgData = canvas.toDataURL('image/png');
       if (index > 0) doc.addPage();
       doc.addImage(imgData, 'PNG', 10, 10, 190, 120);
     });
 
+    // Télécharger le PDF
     doc.save('cartes_eleves.pdf');
-    showToast('Démarrage du téléchargement...');
+    showToast('Démarrage du téléchargement...', 'success');
+  } catch (error) {
+    showToast(`Erreur lors du téléchargement du PDF : ${error.message}`, 'danger');
+    console.error('Erreur lors du téléchargement du PDF :', error);
   }
-  catch(error) {
-    showToast(`Erreur lors du téléchargement du pdf : ${error.substring(0, 10)}`,
-      'danger');
-    console.error('Erreur lors du téléchargement du pdf :',
-      error);
-  }
+}
+
+// Fonction pour télécharger un canvas individuel
+async function downloadCanvas(canvas, filename) {
+  return new Promise((resolve, reject) => {
+    try {
+      // Vérifier que le canvas existe et est valide
+      if (!canvas || !canvas.toBlob) {
+        throw new Error("Le canvas est invalide ou non supporté par le navigateur.");
+      }
+
+      // Convertir le canvas en Blob
+      canvas.toBlob((blob) => {
+        if (!blob) {
+          throw new Error("Erreur lors de la conversion du canvas en Blob.");
+        }
+
+        // Créer un lien de téléchargement
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.click();
+
+        // Libérer la mémoire
+        URL.revokeObjectURL(url);
+
+        // Afficher un message de succès
+        showToast('Téléchargement démarré...', 'success');
+        resolve();
+      }, 'image/png');
+    } catch (error) {
+      // Afficher un message d'erreur détaillé
+      showToast(`Erreur lors du téléchargement du canvas : ${error.message}`, 'danger');
+      console.error('Erreur lors du téléchargement du canvas :', error);
+      reject(error);
+    }
+  });
 }
 
 // Choisir le format de téléchargement
