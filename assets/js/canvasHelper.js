@@ -103,13 +103,27 @@ Drawing an image, parameters are
 (source , x position, y position, width, height, context)
 */
 
-function drawImage(src, x, y, w, h, c, imgName='N/A') {
+function drawImage(src, x, y, w, h, c, imgName = 'N/A') {
   const img = new Image();
   img.src = src;
   img.addEventListener('load', ()=> {
     c.drawImage(img, x, y, w, h);
   }, false);
   img.addEventListener('error', ()=> {
-    console.log('Image non disponible :',imgName)
+    console.log('Image non disponible :', imgName)
   }, false);
+}
+
+// Fonction pour redimensionner un canvas
+function resizeCanvas(canvas, maxWidth, maxHeight) {
+  const resizedCanvas = document.createElement('canvas');
+  resizedCanvas.width = maxWidth;
+  resizedCanvas.height = maxHeight;
+  const ctx = resizedCanvas.getContext('2d');
+  ctx.drawImage(canvas,
+    0,
+    0,
+    maxWidth,
+    maxHeight);
+  return resizedCanvas;
 }

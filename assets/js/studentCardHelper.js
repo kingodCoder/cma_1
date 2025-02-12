@@ -1,119 +1,166 @@
-// Fonction pour personnaliser la carte (cardCP)
-//Background handling
-function drawBg(ch,cw,c){
-  return new Promise((resolve, reject)=>{
-    try{
-      let bgx = 0,
-      bgy = 0,
-      bgw = cw,
-      bgh = ch,
-      bgr = 15,
-      bglw = 5;
-      drawImage('img/card/bg/bg_3.jpeg', bglw/2, bglw/2, bgw-bglw, bgh-bglw,
-      c);
-      resolve();
-    }
-    catch(error){
-      showToast("Background image took so much time loading...", "danger");
-      console.error("Background image took so much time loading...", "danger:",error);
-      reject();
-    }
-  });
+// Classe pour gérer la génération des cartes
+class StudentCard {
+  constructor(student) {
+    this.student = student;
+    this.colors = {
+      lb: 'lightblue',
+      b: 'blue',
+      db: 'darkblue',
+      w: 'white',
+      bk: 'black',
+      r: 'red',
+      y: 'yellow',
+      o: 'orange',
+      br: 'brown',
+      g: 'grey'
+    };
+  }
+
+  async generateCard() {
+    const canvas = document.createElement("canvas");
+    canvas.classList.add("img-thumbnail");
+    canvas.width = 400;
+    canvas.height = 250;
+    const c = canvas.getContext("2d");
+
+    await this.drawBg(canvas, c);
+    setTimeout(async ()=>{
+    await this.drawCardContent(canvas, c);
+    },3000);
+
+    return canvas;
+  }
+
+  async drawBg(canvas, c) {
+    // Dessiner l'image de fond
+    await drawBg(canvas.height, canvas.width, c);
+  }
+
+  async drawCardContent(canvas, c) {
+    const {
+      qrText,
+      formattedText
+    } = generateQRCodeText(this.student);
+
+    // Dessiner le contenu de la carte (bannières, texte, QR code, etc.)
+    await cardCP(canvas.height, canvas.width, canvas.width / 2, canvas.height / 2, this.colors, 0, 25, 25, 12.5, 12.5, c);
+    await studentId(this.student, canvas.height, canvas.width, canvas.width / 2,
+      canvas.height / 2, this.colors, 0, 25, 25, 12.5, 12.5, qrText,
+      formattedText, c);
+  }
+
+  async customizeCardContent() {
+    //...
+    console.log("This is coming soon !!!");
+  }
 }
 
+// Fonction pour dessiner l'image de fond
+async function drawBg(ch, cw, c) {
+  try {
+    let bgx = 0,
+    bgy = 0,
+    bgw = cw,
+    bgh = ch,
+    bgr = 15,
+    bglw = 5;
+    drawImage('img/card/bg/bg_3.jpeg', bglw/2, bglw/2, bgw-bglw, bgh-bglw,
+      c);
+  }
+  catch(error) {
+    showToast("Background image took so much time loading...", "danger");
+    console.error("Background image took so much time loading...", "danger:", error);
+  }
+}
+
+// Fonction pour personnaliser la carte (cardCP)
 function cardCP(ch, cw, cw2, ch2, colors, o, h, w, y, x, c) {
-    try {
-      // 🎨 Personnalisation de la carte
-      
-      // 🎯 Bannière gauche (Header)
-      let xhl = 5,
-      yhl = 5,
-      whl = (cw2-(w*2)),
-      hhl = x,
-      rhl = 7.5;
-      c.beginPath();
-      c.moveTo(xhl+rhl, yhl);
-      c.lineTo(whl, yhl);
-      c.lineTo(whl, yhl+hhl);
-      c.lineTo(xhl, yhl+hhl);
-      c.arcTo(xhl, yhl, xhl+hhl, yhl, rhl);
-      c.fillStyle = colors.b;
-      c.fill();
-      c.closePath();
 
-      // 🎯 Bannière centrale
-      let xhm = (cw2-(w*2)),
-      yhm = 5,
-      whm = (cw2/2),
-      hhm = x;
-      fullRect(colors.y, whm, hhm, xhm, yhm, c);
+  // 🎨 Personnalisation de la carte
 
-      // 🎯 Bannière droite
-      let xhr = ((cw2-(w*2))+(cw2/2)),
-      yhr = 5,
-      whr = whl-5,
-      hhr = hhl,
-      rhr = 7.5;
-      c.beginPath();
-      c.moveTo(xhr, yhr);
-      c.lineTo(xhr+whr-rhr, yhr);
-      c.arcTo(xhr+whr, yhr, xhr+whr, yhr+rhr, rhr);
-      c.lineTo(xhr+whr, yhr+hhr);
-      c.lineTo(xhr, yhr+hhr);
-      c.fillStyle = colors.r;
-      c.fill();
-      c.closePath();
+  // 🎯 Bannière gauche (Header)
+  let xhl = 5,
+  yhl = 5,
+  whl = (cw2-(w*2)),
+  hhl = x,
+  rhl = 7.5;
+  c.beginPath();
+  c.moveTo(xhl+rhl, yhl);
+  c.lineTo(whl, yhl);
+  c.lineTo(whl, yhl+hhl);
+  c.lineTo(xhl, yhl+hhl);
+  c.arcTo(xhl, yhl, xhl+hhl, yhl, rhl);
+  c.fillStyle = colors.b;
+  c.fill();
+  c.closePath();
 
-      // 🎯 Zone Logo
-      let bx = ((w*3)-(x-5))+5,
-      by = h+5,
-      bh = (h+(x/2)),
-      bw = ((cw-((w*3)-(x-5)))-12.5);
-      fullRect(colors.db, bw, bh, bx, by, c);
+  // 🎯 Bannière centrale
+  let xhm = (cw2-(w*2)),
+  yhm = 5,
+  whm = (cw2/2),
+  hhm = x;
+  fullRect(colors.y, whm, hhm, xhm, yhm, c);
 
-      // 🎯 Image principale
-      let xil = -16+30,
-      yil = (h-(x-8))+5,
-      hil = 60,
-      wil = 60,
-      clw = h*1.5,
-      clh = clw;
-      c.fillStyle = colors.db;
-      c.beginPath();
-      c.arc(xil+(clw/1.25), yil+(clh/1.25), clh, 0, (Math.PI * 2));
-      c.fill();
-      drawImage('img/card/logo/okapi_3.png', xil-((wil/2)-(clw/1.15)),
-        yil-((hil/2)-(clh/1.05)), wil, hil, c);
+  // 🎯 Bannière droite
+  let xhr = ((cw2-(w*2))+(cw2/2)),
+  yhr = 5,
+  whr = whl-5,
+  hhr = hhl,
+  rhr = 7.5;
+  c.beginPath();
+  c.moveTo(xhr, yhr);
+  c.lineTo(xhr+whr-rhr, yhr);
+  c.arcTo(xhr+whr, yhr, xhr+whr, yhr+rhr, rhr);
+  c.lineTo(xhr+whr, yhr+hhr);
+  c.lineTo(xhr, yhr+hhr);
+  c.fillStyle = colors.r;
+  c.fill();
+  c.closePath();
 
-      // 🎯 Texte principal
-      let xtl = ((w*3)-(x-5))+20,
-      ytl = ((h+(h+(x/2)))-(16/2))+6,
-      mwtl = 200;
-      fullText(colors.w, '25px Arial', 'C.S OKAPI', xtl, ytl, mwtl, c);
+  // 🎯 Zone Logo
+  let bx = ((w*3)-(x-5))+5,
+  by = h+5,
+  bh = (h+(x/2)),
+  bw = ((cw-((w*3)-(x-5)))-12.5);
+  fullRect(colors.db, bw, bh, bx, by, c);
 
-      // 🎯 Pied de carte (Footer)
-      let fw = cw-h,
-      fh = h,
-      fx = 6+(h/4),
-      fy = ch-(fh+6),
-      fr = 10,
-      ftx = fx+(h/2.65),
-      fty = fy+(h/2.5)+(18/2),
-      ftw = 200,
-      ftf = 'bold 18px Roboto',
-      ftc = colors.w;
-      drawRCFullR(colors.b, fw, fh, fx, fy, fr, c);
-      fullText(ftc, ftf, 'ANNEE SCOLAIRE : 2023-2024', ftx, fty, ftw, c);
-    } catch (error) {
-      console.error("Erreur lors du chargement des bannières de la carte :",
-        error);
-      showToast("Erreur lors du chargement des bannières de la carte.",
-        "danger");
-    }
+  // 🎯 Image principale
+  let xil = -16+30,
+  yil = (h-(x-8))+5,
+  hil = 60,
+  wil = 60,
+  clw = h*1.5,
+  clh = clw;
+  c.fillStyle = colors.db;
+  c.beginPath();
+  c.arc(xil+(clw/1.25), yil+(clh/1.25), clh, 0, (Math.PI * 2));
+  c.fill();
+  drawImage('img/card/logo/okapi_3.png', xil-((wil/2)-(clw/1.15)),
+    yil-((hil/2)-(clh/1.05)), wil, hil, c);
+
+  // 🎯 Texte principal
+  let xtl = ((w*3)-(x-5))+20,
+  ytl = ((h+(h+(x/2)))-(16/2))+6,
+  mwtl = 200;
+  fullText(colors.w, '25px Arial', 'C.S OKAPI', xtl, ytl, mwtl, c);
+
+  // 🎯 Pied de carte (Footer)
+  let fw = cw-h,
+  fh = h,
+  fx = 6+(h/4),
+  fy = ch-(fh+6),
+  fr = 10,
+  ftx = fx+(h/2.65),
+  fty = fy+(h/2.5)+(18/2),
+  ftw = 200,
+  ftf = 'bold 18px Roboto',
+  ftc = colors.w;
+  drawRCFullR(colors.b, fw, fh, fx, fy, fr, c);
+  fullText(ftc, ftf, 'ANNEE SCOLAIRE : 2023-2024', ftx, fty, ftw, c);
 }
 
 // Fonction pour personnaliser les informations de l'élève (studentId)
-function studentId(student, ch, cw, cw2, ch2, colors, o, h, w, y, x, qrText, formattedText, c) {
+async function studentId(student, ch, cw, cw2, ch2, colors, o, h, w, y, x, qrText, formattedText, c) {
   try {
     // 🎨 Personnalisation de l'élève
 
@@ -128,7 +175,7 @@ function studentId(student, ch, cw, cw2, ch2, colors, o, h, w, y, x, qrText, for
     drawRCFullR(colors.lb, ((xp+lwp)-(rp*2)), ((yp+lwp)-(rp*2)), (hp-(lwp/2)+rp),
       (wp-(lwp/2)+rp), (rp/2), c);
     drawImage(student.Photo || "img/card/pic/pic_2.png", (hp-(lwp/2)+rp),
-    (wp-(lwp/2)+rp), ((xp+lwp)-(rp*2)), ((yp+lwp)-(rp*2)), c, student.Photo);
+      (wp-(lwp/2)+rp), ((xp+lwp)-(rp*2)), ((yp+lwp)-(rp*2)), c, student.Photo);
 
     // 🎯 Génération du QR Code
     let qrh = 50 + (x / 2),
@@ -299,4 +346,26 @@ function studentId(student, ch, cw, cw2, ch2, colors, o, h, w, y, x, qrText, for
     showToast("Erreur lors du chargement de l'image ou du QR code",
       "danger");
   }
+}
+
+async function preloadImages() {
+  const images = [
+    'img/card/bg/bg_3.jpeg',
+    'img/card/logo/okapi_3.png',
+    'img/card/pic/pic_2.png'
+  ];
+
+  await Promise.all(images.map(src => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.src = src;
+      img.onload = resolve;
+      img.onerror = reject;
+    });
+  }));
+}
+
+// Coming soon ...
+function customizeCard(colors, logo, background) {
+  // Mettre à jour les couleurs, le logo et l'image de fond
 }

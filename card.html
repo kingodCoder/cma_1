@@ -4,64 +4,120 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cartes d'Élèves avec QR Code</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="./assets/css/style.css" rel="stylesheet" />
-<link href="./assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
 </head>
-<body>
-<header class="bg-primary text-white text-center py-4">
-<h1>📌 Cartes d'élèves avec QR Code</h1>
-</header>
+<body class="py-5">
+  <header class="bg-primary text-white text-center py-4">
+    <h1>📌 Cartes d'élèves avec QR Code</h1>
+  </header>
 
-<main class="container mb-5 pb-3 position-relative">
-<!-- Popups Bootstrap (Toast) -->
-<div class="position-fixed top-0 start-0 end-0 toaster" style="z-index: 1050">
-<div id="toastContainer"></div>
-</div>
+  <!-- Menu de navigation -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">Card Maker App</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link" href="./index.html">Accueil</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="./about.html">À propos</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="./card.html">Générer les cartes</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
 
-<!-- Barre de progression globale -->
-<div id="globalProgressContainer" class="progress" style="height: 5px; display:
-none;">
-<div id="globalProgressBar" class="progress-bar progress-bar-striped
-progress-bar-animated" role="progressbar" style="width: 0%"></div>
-</div>
+  <main class="container mb-5 pb-3 position-relative">
+    <!-- Popups Bootstrap (Toast) -->
+    <div class="position-fixed top-0 start-0 end-0 toaster" style="z-index: 1050">
+      <div id="toastContainer"></div>
+    </div>
 
-<div class="row pb-2 g-2 mt-5">
-<div class="col-12 col-md-6 text-center d-flex justify-content-center
-align-items-center">
-<!-- Button to fetch student data -->
-<button id="loadCards" class="btn btn-success">🔄 Charger les cartes</button>
-</div>
-<div class="col-12 col-md-6 text-center p-3">
-<label for="downloadAs" class="form-label">Télécharger :</label>
-<select id="downloadAs" class="form-select bg-success text-white">
-<option value="">-- Sélectionnez une option --</option>
-<option value="asimg">En tant qu'image...</option>
-<option value="aspdf">En tant que document pdf</option>
-</select>
-</div>
-</div>
-<!-- Conteneur pour les cartes -->
-<div class="row py-1 bg-dark border-2 border border-danger mx-1 mt-3
-mb-1
-rounded-3" id="cards-container"></div>
-</main>
+    <!-- Barre de progression globale -->
+    <div id="globalProgressContainer" class="progress" style="height: 10px;
+    display: none;">
+      <div id="globalProgressBar" class="progress-bar progress-bar-striped
+      progress-bar-animated" role="progressbar" style="width: 0%"></div>
+    </div>
 
-<footer class="bg-primary text-white text-center py-3 fixed-bottom">
-<span>© Copyright Card Maker Test App - <strong>Mbmos</strong> 2025</span>
-</footer>
+    <!-- Groupe 1 : Importer les données des élèves -->
+    <div class="row mt-5">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header bg-info text-white">
+            <h5 class="card-title mb-0">📥 Importer les données des élèves</h5>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-12 col-md-6">
+                <h6>Téléverser un fichier CSV</h6>
+                <input type="file" id="csvFileInput" class="form-control" accept=".csv">
+              </div>
+              <div class="col-12 col-md-6">
+                <h6>Connexion à l'API KoboCollect</h6>
+                <div class="input-group mb-3">
+                  <input type="text" id="koboApiUrl" class="form-control" placeholder="Entrez l'URL de l'API KoboCollect">
+                  <button id="connectToKobo" class="btn btn-primary">Se connecter</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-<!-- Load scripts at the end of the body -->
-<script src="./assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-<!--
-<script
-src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
--->
-<script
-src="./assets/vendor/qrcode/qrcode.min.js"></script>
-<script src="./assets/vendor/papaparse/papaparse.min.js"></script>
-<script src="./assets/js/utils.js"></script>
-<script src="./assets/js/canvasHelper.js"></script>
-<script src="./assets/js/studentCardHelper.js"></script>
-<script src="./assets/js/script.js"></script>
+    <!-- Groupe 2 : Générer et exporter les cartes -->
+    <div class="row mt-4">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header bg-success text-white">
+            <h5 class="card-title mb-0">🖼️ Générer et exporter les cartes</h5>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-12 col-md-6 text-center d-flex justify-content-center align-items-center">
+                <button id="loadCards" class="btn btn-success">🔄 Générer les cartes</button>
+              </div>
+              <div class="col-12 col-md-6 text-center p-3">
+                <label for="downloadAs" class="form-label">Exporter les cartes :</label>
+                <select id="downloadAs" class="form-select bg-success text-white">
+                  <option value="">-- Sélectionnez une option --</option>
+                  <option value="all_pdf">Toutes les cartes en PDF</option>
+                  <option value="all_png">Toutes les cartes en PNG</option>
+                  <option value="single_pdf">Une carte en PDF</option>
+                  <option value="single_png">Une carte en PNG</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Conteneur pour les cartes -->
+    <div class="row py-1 bg-dark border-2 border border-danger mx-1 mt-3 mb-1 rounded-3" id="cards-container"></div>
+  </main>
+
+  <footer class="bg-primary text-white text-center py-3 fixed-bottom">
+    <span>© Copyright Card Maker Test App - <strong>Mbmos</strong> 2025</span>
+  </footer>
+
+  <!-- Load scripts at the end of the body -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="./assets/js/utils.js"></script>
+  <script src="./assets/js/canvasHelper.js"></script>
+  <script src="./assets/js/studentCardHelper.js"></script>
+  <script src="./assets/js/script.js"></script>
 </body>
 </html>

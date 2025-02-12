@@ -45,7 +45,7 @@ function updateGlobalProgress(percent) {
 }
 
 // Fonction pour télécharger toutes les cartes au format PDF
-function downloadAllAsPDF() {
+async function downloadAllAsPDF() {
   try {
     const {
       jsPDF
@@ -214,4 +214,15 @@ async function resizeImage(imageUrl, width, height) {
       resolve(canvas.toDataURL());
     };
   });
+}
+
+// Fonction pour abréger le nom de la classe
+function abbreviateClass(className) {
+  return className.substring(0,
+    2).toUpperCase();
+}
+
+// Fonction pour précharger les images
+async function preloadImages() {
+  //...
 }
