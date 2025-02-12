@@ -32,102 +32,15 @@ function showToast(message, type = "info") {
 
 // Function for a global progress bar
 function updateGlobalProgress(percent) {
-  const progressContainer = document.getElementById("globalProgressContainer");
-  const progressBar = document.getElementById("globalProgressBar");
-
-  if (percent > 0) {
-    progressContainer.style.display = "block";
-    progressBar.style.width = `${percent}%`;
-  }
-  if (percent >= 100) {
-    setTimeout(() => progressContainer.style.display = "none", 500);
-  }
-}
-
-// Fonction pour télécharger toutes les cartes au format PDF
-async function downloadAllAsPDF() {
-  try {
-    const {
-      jsPDF
-    } = window.jspdf;
-    if (!jsPDF) {
-      throw new Error("La bibliothèque jsPDF n'est pas chargée.");
+  requestAnimationFrame(() => {
+    const progressContainer = document.getElementById("globalProgressContainer");
+    const progressBar = document.getElementById("globalProgressBar");
+    if (percent > 0) {
+      progressContainer.style.display = "block";
+      progressBar.style.width = `${percent}%`;
     }
-
-    const cards = document.querySelectorAll('#cards-container canvas');
-
-    // Vérifier s'il y a des canvas à télécharger
-    if (cards.length === 0) {
-      showToast("Aucune carte à télécharger.", "warning");
-      return;
-    }
-
-    // Vérifier que chaque canvas contient des données
-    cards.forEach((canvas, index) => {
-      if (!canvas || !canvas.toDataURL) {
-        throw new Error(`Le canvas ${index + 1} est invalide ou vide.`);
-      }
-    });
-
-    // Créer le PDF
-    const doc = new jsPDF('p',
-      'mm',
-      'a4');
-    cards.forEach((canvas, index) => {
-      const imgData = canvas.toDataURL('image/png');
-      if (index > 0) doc.addPage();
-      doc.addImage(imgData, 'PNG', 10, 10, 190, 120);
-    });
-
-    // Télécharger le PDF
-    doc.save('cartes_eleves.pdf');
-    showToast('Démarrage du téléchargement...',
-      'success');
-  } catch (error) {
-    showToast(`Erreur lors du téléchargement du PDF : ${error.message}`,
-      'danger');
-    console.error('Erreur lors du téléchargement du PDF :',
-      error);
-  }
-}
-
-// Fonction pour télécharger un canvas individuel
-async function downloadCanvas(canvas, filename) {
-  return new Promise((resolve, reject) => {
-    try {
-      // Vérifier que le canvas existe et est valide
-      if (!canvas || !canvas.toBlob) {
-        throw new Error("Le canvas est invalide ou non supporté par le navigateur.");
-      }
-
-      // Convertir le canvas en Blob
-      canvas.toBlob((blob) => {
-        if (!blob) {
-          throw new Error("Erreur lors de la conversion du canvas en Blob.");
-        }
-
-        // Créer un lien de téléchargement
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        a.click();
-
-        // Libérer la mémoire
-        URL.revokeObjectURL(url);
-
-        // Afficher un message de succès
-        showToast('Téléchargement démarré...', 'success');
-        resolve();
-      },
-        'image/png');
-    } catch (error) {
-      // Afficher un message d'erreur détaillé
-      showToast(`Erreur lors du téléchargement du canvas : ${error.message}`,
-        'danger');
-      console.error('Erreur lors du téléchargement du canvas :',
-        error);
-      reject(error);
+    if (percent >= 100) {
+      setTimeout(() => progressContainer.style.display = "none", 500);
     }
   });
 }
@@ -222,7 +135,6 @@ function abbreviateClass(className) {
     2).toUpperCase();
 }
 
-// Fonction pour précharger les images
-async function preloadImages() {
-  //...
+function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }

@@ -24,9 +24,7 @@ class StudentCard {
     const c = canvas.getContext("2d");
 
     await this.drawBg(canvas, c);
-    setTimeout(async ()=>{
     await this.drawCardContent(canvas, c);
-    },3000);
 
     return canvas;
   }
@@ -37,6 +35,7 @@ class StudentCard {
   }
 
   async drawCardContent(canvas, c) {
+    await delay(1000); // Attend 1 seconde
     const {
       qrText,
       formattedText
@@ -347,6 +346,8 @@ async function studentId(student, ch, cw, cw2, ch2, colors, o, h, w, y, x, qrTex
       "danger");
   }
 }
+
+// Fonction pour précharger les images
 
 async function preloadImages() {
   const images = [
