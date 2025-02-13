@@ -32,7 +32,7 @@ $("#downloadAs").addEventListener("change", function() {
 $("#csvFileInput").addEventListener("change",
   handleCSVFileUpload);
 
-$("#connectToKobo").addEventListener("click", async () => {
+$("#connectToKobo").addEventListener("dblclick", async () => {
   const apiUrl = document.getElementById("koboApiUrl").value;
   if (apiUrl) {
     data = await fetchDataFromKoboCollect(apiUrl);
@@ -42,7 +42,7 @@ $("#connectToKobo").addEventListener("click", async () => {
   }
 });
 
-$("#cards-container").addEventListener("dblclick", (event) => {
+$("#cards-container").addEventListener("click", (event) => {
   if (event.target.tagName === "CANVAS") {
     const canvas = event.target;
     const zoomedCanvas = document.createElement("canvas");
