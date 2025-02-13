@@ -54,26 +54,30 @@ class StudentCard {
   }
 }
 
-// Fonction pour dessiner l'image de fond
+// Fonction pour dessiner l'image de fond.
 async function drawBg(ch, cw, c) {
-  try {
-    let bgx = 0,
-    bgy = 0,
-    bgw = cw,
-    bgh = ch,
-    bgr = 15,
-    bglw = 5;
-    drawImage('img/card/bg/bg_3.jpeg', bglw/2, bglw/2, bgw-bglw, bgh-bglw,
-      c);
-  }
-  catch(error) {
-    showToast("Background image took so much time loading...", "danger");
-    console.error("Background image took so much time loading...", "danger:", error);
-  }
+  return new Promise((resolve, reject) => {
+    try {
+      const img = 'img/card/bg/bg_3.jpeg';
+      let bgx = 0,
+      bgy = 0,
+      bgw = cw,
+      bgh = ch,
+      bgr = 15,
+      bglw = 5;
+      drawImage(img, bglw/2, bglw/2, bgw-bglw, bgh-bglw, c);
+      resolve();
+    }
+    catch(error) {
+      showToast("Erreur lors du chargement de l'image de fond.", "danger");
+      console.error(error);
+      reject(error);
+    }
+  });
 }
 
 // Fonction pour personnaliser la carte (cardCP)
-function cardCP(ch, cw, cw2, ch2, colors, o, h, w, y, x, c) {
+async function cardCP(ch, cw, cw2, ch2, colors, o, h, w, y, x, c) {
 
   // 🎨 Personnalisation de la carte
 
@@ -124,6 +128,8 @@ function cardCP(ch, cw, cw2, ch2, colors, o, h, w, y, x, c) {
   fullRect(colors.db, bw, bh, bx, by, c);
 
   // 🎯 Image principale
+  const img = 'img/card/logo/okapi_3.png';
+
   let xil = -16+30,
   yil = (h-(x-8))+5,
   hil = 60,
@@ -134,8 +140,7 @@ function cardCP(ch, cw, cw2, ch2, colors, o, h, w, y, x, c) {
   c.beginPath();
   c.arc(xil+(clw/1.25), yil+(clh/1.25), clh, 0, (Math.PI * 2));
   c.fill();
-  drawImage('img/card/logo/okapi_3.png', xil-((wil/2)-(clw/1.15)),
-    yil-((hil/2)-(clh/1.05)), wil, hil, c);
+  drawImage(img, xil-((wil/2)-(clw/1.15)), yil-((hil/2)-(clh/1.05)), wil, hil, c);
 
   // 🎯 Texte principal
   let xtl = ((w*3)-(x-5))+20,
@@ -164,17 +169,39 @@ async function studentId(student, ch, cw, cw2, ch2, colors, o, h, w, y, x, qrTex
     // 🎨 Personnalisation de l'élève
 
     // 🎯 Photo de l'élève
+    /* imgURL = async () =>{
+      try {
+    // Essayer de charger l'image principale
+    const img = await loadImage(student.Photo);
+    return img;
+  } catch (error) {
+    console.error(error.message); // Afficher l'erreur dans la console
+
+    // Charger et dessiner l'image alternative en cas d'erreur
+    try {
+      const fallbackImg = await loadImage('./img/card/pic/pic_2.png');
+      return fallbackImg;
+    } catch (fallbackError) {
+      console.error("Erreur lors du chargement de l'image alternative :", fallbackError.message);
+    }
+  }
+    },*/
+    // img = await imgURL(),
     let xp = (cw/4.35),
     yp = ((cw/8)*2.175),
     hp = (cw-(cw/4)),
     wp = (cw/5.25),
     rp = 5,
     lwp = (5/2);
+    fallbackImagePath = './img/card/pic/pic_2.png';
+    
     drawRCStrokeR(colors.db, xp, yp, hp, wp, rp, lwp, c);
     drawRCFullR(colors.lb, ((xp+lwp)-(rp*2)), ((yp+lwp)-(rp*2)), (hp-(lwp/2)+rp),
       (wp-(lwp/2)+rp), (rp/2), c);
-    drawImage(student.Photo || "img/card/pic/pic_2.png", (hp-(lwp/2)+rp),
-      (wp-(lwp/2)+rp), ((xp+lwp)-(rp*2)), ((yp+lwp)-(rp*2)), c, student.Photo);
+    /*drawImage(img, (hp-(lwp/2)+rp), (wp-(lwp/2)+rp),
+    ((xp+lwp)-(rp*2)),((yp+lwp)-(rp*2)), c);*/
+    // Dessiner les images de tous les étudiants
+    await drawStudentImage(cw, c, student, fallbackImagePath);
 
     // 🎯 Génération du QR Code
     let qrh = 50 + (x / 2),
@@ -191,18 +218,21 @@ async function studentId(student, ch, cw, cw2, ch2, colors, o, h, w, y, x, qrTex
       correctLevel: QRCode.CorrectLevel.L // 🔥 Réduction du niveau d'erreur
     });
     drawRCStrokeR(colors.db, qrh, qrw, qrx, qry, qrr, 2, c);
-    setTimeout(() => {
-      const qrImage = qrDiv.querySelector("canvas");
-      if (qrImage) {
-        c.drawImage(qrImage, qrx + qrs, qry + qrs, qrw - (qrs * 2), qrh - (qrs * 2));
-      }
-    },
-      500);
+    const qrImage = qrDiv.querySelector("canvas");
+    if (qrImage) {
+      c.drawImage(qrImage, qrx + qrs, qry + qrs, qrw - (qrs * 2), qrh - (qrs * 2));
+    }
 
     // 🎯 Matricule élève
     let emat = 'Matricule',
     mat = formattedText || '001-Okapi-EB',
-    ml = emat.length, eml = mat.length, ftx = (6+(h/4))+(h/2.65), ftw = 200, my = 240, emx = ftx+ftw+(ml*8)+eml, mx = ftx+ftw+(ml*8)+eml;
+    ml = emat.length,
+    eml = mat.length,
+    ftx = (6+(h/4))+(h/2.65),
+    ftw = 200,
+    my = 240,
+    emx = ftx+ftw+(ml*8)+eml,
+    mx = ftx+ftw+(ml*8)+eml;
     fullText(colors.bk,
       'bold 10px Roboto',
       emat.toUpperCase(),
@@ -339,34 +369,110 @@ async function studentId(student, ch, cw, cw2, ch2, colors, o, h, w, y, x, qrTex
       ccw,
       c);
 
-  } catch (error) {
-    console.error("Erreur lors du chargement de l'image ou du QR code :",
-      error);
+  }
+  catch (error) {
+    console.error(error);
     showToast("Erreur lors du chargement de l'image ou du QR code",
       "danger");
   }
 }
 
 // Fonction pour précharger les images
-
-async function preloadImages() {
-  const images = [
+async function preloadImages(students, batchSize = 5) {
+  // Liste des images statiques à précharger
+  const staticImages = [
     'img/card/bg/bg_3.jpeg',
     'img/card/logo/okapi_3.png',
     'img/card/pic/pic_2.png'
   ];
 
-  await Promise.all(images.map(src => {
+  // Récupérer les URLs des images des étudiants (en vérifiant qu'elles sont valides)
+  const studentImages = students
+  .map(student => student.Photo)
+  .filter(url => url && typeof url === 'string');
+
+  // Combiner les images statiques et les images des étudiants
+  const allImages = [...staticImages,
+    ...studentImages];
+
+  // Fonction pour charger une image individuelle
+  function loadImage(src) {
     return new Promise((resolve, reject) => {
       const img = new Image();
+      img.crossOrigin = "anonymous"; // Indiquer que l'image est sûre
       img.src = src;
       img.onload = resolve;
-      img.onerror = reject;
+      img.onerror = () => {
+        console.error(`Erreur lors du chargement de l'image : ${src}`);
+        resolve(); // Ignorer l'erreur et continuer
+      };
     });
-  }));
+  }
+
+  // Fonction pour précharger les images par lots
+  async function preloadImagesInBatches(images, batchSize) {
+    let loadedCount = 0;
+    const totalImages = images.length;
+
+    for (let i = 0; i < images.length; i += batchSize) {
+      const batch = images.slice(i, i + batchSize);
+      await Promise.all(batch.map(src => loadImage(src)));
+
+      loadedCount += batch.length;
+      console.log(`Batch ${i / batchSize + 1} préchargé. ${loadedCount}/${totalImages} images chargées.`);
+    }
+  }
+
+  // Précharger toutes les images par lots
+  try {
+    await preloadImagesInBatches(allImages, batchSize);
+    console.log("Toutes les images ont été préchargées avec succès.");
+    showToast("Toutes les images ont été préchargées avec succès.");
+  } catch (error) {
+    console.error("Erreur lors du préchargement des images :", error);
+  }
 }
 
+
 // Coming soon ...
-function customizeCard(colors, logo, background) {
+function customizeCard(colors,
+  logo,
+  background) {
   // Mettre à jour les couleurs, le logo et l'image de fond
 }
+
+// Fonction pour dessiner l'image de l'élève
+async function drawStudentImage(cw, ctx, student, fallbackImagePath) {
+let xp = (cw/4.35),
+    yp = ((cw/8)*2.175),
+    hp = (cw-(cw/4)),
+    wp = (cw/5.25),
+    rp = 5,
+    lwp = (5/2);
+  try {
+    // Essayer de charger l'image principale
+    const img = await loadImage(student.Photo);
+    ctx.drawImage(img, (hp-(lwp/2)+rp), (wp-(lwp/2)+rp), ((xp+lwp)-(rp*2)),
+    ((yp+lwp)-(rp*2)));
+  } catch (error) {
+    console.error(error.message); // Afficher l'erreur dans la console
+
+    // Charger et dessiner l'image alternative en cas d'erreur
+    try {
+      const fallbackImg = await loadImage(fallbackImagePath);
+      ctx.drawImage(fallbackImg, (hp-(lwp/2)+rp), (wp-(lwp/2)+rp), ((xp+lwp)-(rp*2)),
+    ((yp+lwp)-(rp*2)));
+    } catch (fallbackError) {
+      console.error("Erreur lors du chargement de l'image alternative :", fallbackError.message);
+    }
+  }
+}
+
+// Fonction pour dessiner toutes les images des élèves après vérification de leurs éventuelles existences !
+async function drawAllStudentImages(students, fallbackImagePath, cw, ctx) {
+  await delay(3000);
+  for (const student of students) {
+    await drawStudentImage(cw, ctx, student, fallbackImagePath);
+  }
+}
+

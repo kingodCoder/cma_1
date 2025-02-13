@@ -47,7 +47,7 @@ function updateGlobalProgress(percent) {
 
 // Fonction pour retirer le fond et redimensionner l'image
 async function removeBackgroundAndResize(imageUrl, width, height) {
-  /*
+
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 5000); // Timeout de 5s
@@ -70,23 +70,28 @@ async function removeBackgroundAndResize(imageUrl, width, height) {
   } catch (error) {
     console.warn("Erreur Remove.bg, redimensionnement sans suppression du fond...", error);
   }
-*/
-  return await resizeImage(imageUrl, width, height); // 🔴 Utilisation de l’image originale
+
+  return await resizeImage(imageUrl,
+    width,
+    height); // 🔴 Utilisation de l’image originale
 }
 
 // 🟢 Fonction pour utiliser Erase.bg
 async function eraseBgRemove(imageUrl) {
   const formData = new FormData();
-  formData.append("image_url", imageUrl);
-  formData.append("output_format", "png");
+  formData.append("image_url",
+    imageUrl);
+  formData.append("output_format",
+    "png");
 
-  const response = await fetch("https://api.erase.bg/v1/remove-background", {
-    method: "POST",
-    headers: {
-      "X-API-Key": "VOTRE_CLE_API_ERASEBG"
-    },
-    body: formData,
-  });
+  const response = await fetch("https://api.erase.bg/v1/remove-background",
+    {
+      method: "POST",
+      headers: {
+        "X-API-Key": "VOTRE_CLE_API_ERASEBG"
+      },
+      body: formData,
+    });
 
   const data = await response.json();
   if (!data || !data.output_url) throw new Error("Échec Erase.bg");
@@ -135,6 +140,26 @@ function abbreviateClass(className) {
     2).toUpperCase();
 }
 
-function delay(ms) {
+// Fonction pour retarder l'exécution d'une autre fonction.
+async function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// Classe d'erreur personnalisée pour les photos d'élèves non dispd'élèves
+class StudentPhotoError extends Error {
+  constructor(message){
+    super(message);
+    this.name = 'StudentPhotoError';
+  }
+}
+
+// Fonction pour charger une image.
+function loadImage(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous"; // Indiquer que l'image est sûre
+    img.src = src;
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error(`Erreur lors du chargement de l'image : ${src}`));
+  });
 }

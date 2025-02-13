@@ -105,12 +105,14 @@ Drawing an image, parameters are
 
 function drawImage(src, x, y, w, h, c, imgName = 'N/A') {
   const img = new Image();
+  img.crossOrigin = "anonymous"; // Indiquer que l'image est sûre
   img.src = src;
   img.addEventListener('load', ()=> {
     c.drawImage(img, x, y, w, h);
   }, false);
   img.addEventListener('error', ()=> {
-    console.log('Image non disponible :', imgName)
+    console.log(`Image non disponible : ${imgName}`);
+    //throw new StudentPhotoError('Erreur lors du dessin de l\'image sur le canvas.');
   }, false);
 }
 

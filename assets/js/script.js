@@ -9,9 +9,9 @@ $('#loadCards').addEventListener("click", async () => {
   document.getElementById("globalProgressContainer").style.display = "block";
   updateGlobalProgress(0);
 
-  await fetchStudentData();
-  await preloadImages();
-  await generateStudentCards(data);
+  await fetchStudentData()
+  await preloadImages(data, 10)
+  await generateStudentCards(data)
 
   updateGlobalProgress(100);
   setTimeout(() => document.getElementById("globalProgressContainer").style.display = "none", 1000);
@@ -46,8 +46,9 @@ $("#cards-container").addEventListener("dblclick", (event) => {
   if (event.target.tagName === "CANVAS") {
     const canvas = event.target;
     const zoomedCanvas = document.createElement("canvas");
-    zoomedCanvas.width = canvas.width * 2;
-    zoomedCanvas.height = canvas.height * 2;
+    zoomedCanvas.className = 'img-thumbnail border border-primary border-2';
+    zoomedCanvas.width = canvas.width-75;
+    zoomedCanvas.height = canvas.height;
     const ctx = zoomedCanvas.getContext("2d");
     ctx.drawImage(canvas, 0, 0, zoomedCanvas.width, zoomedCanvas.height);
 
@@ -56,9 +57,11 @@ $("#cards-container").addEventListener("dblclick", (event) => {
     modal.style.position = "fixed";
     modal.style.top = "0";
     modal.style.left = "0";
+    modal.style.right = "0";
+    modal.style.bottom = "0";
     modal.style.width = "100%";
     modal.style.height = "100%";
-    modal.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
+    modal.style.backgroundColor = "rgba(0, 0, 0, 1)";
     modal.style.display = "flex";
     modal.style.justifyContent = "center";
     modal.style.alignItems = "center";
@@ -138,13 +141,23 @@ async function fetchStudentData() {
 
 // Fonction pour générer toutes les cartes
 async function generateStudentCards(data) {
+  const validStudents = data.filter(student => student.Photo && student.Photo.trim() !== "");
+
   document.getElementById("cards-container").innerHTML = ""; // Nettoyer avant la boucle
 
-  let total = data.length;
-  let completed = 0;
+
+  if (validStudents.length === 0) {
+    showToast("Aucune donnée valide trouvée dans le fichier CSV.", "warning");
+    return;
+  }
+
+  console.log(`Nombre d'étudiants valides : ${validStudents.length}`);
+
+  let total = validStudents.length,
+  completed = 0;
 
   // 📌 Générer toutes les cartes en parallèle
-  await Promise.all(data.map(async (student, index) => {
+  await Promise.all(validStudents.map(async (student, index) => {
     try {
       await generateStudentCard(student);
       completed++;
@@ -356,16 +369,36 @@ function downloadSingleAsPDF() {
       return;
     }
 
+    // const totalCards = cards.length;
+    // let completedCards = 0;
     cards.forEach((canvas, index) => {
-      const doc = new jsPDF('p', 'mm', 'a4');
-      const imgData = canvas.toDataURL('image/png');
-      doc.addImage(imgData, 'PNG', 10, 10, 190, 120); // Ajuster les dimensions si nécessaire
-      doc.save(`carte_${index + 1}.pdf`);
+      // Exporter le canvas
+      // completedCards++;
+      // updateProgressBar((completedCards / totalCards) * 100);
+
+      // Vérifier que le canvas est valide
+      if (!canvas || !canvas.toDataURL) {
+        throw new Error(`Le canvas ${index + 1} est invalide.`);
+      }
+
+      // Vérifier que le canvas n'est pas "souillé"
+      try {
+        const imgData = canvas.toDataURL('image/png');
+        const doc = new jsPDF('p', 'mm', 'a4');
+        doc.addImage(imgData, 'PNG', 10, 10, 190, 120); // Ajuster les dimensions si nécessaire
+        doc.save(`carte_${index + 1}.pdf`);
+      } catch (error) {
+        console.error(`Erreur lors de l'exportation du canvas ${index + 1} :`, error);
+        showToast(`Erreur lors de l'exportation de la carte ${index + 1}.`, 'danger');
+      }
     });
 
-    showToast('Téléchargement des cartes en PDF démarré...', 'success');
+    showToast('Téléchargement des cartes en PDF démarré...',
+      'success');
   } catch (error) {
-    showToast(`Erreur lors du téléchargement des cartes en PDF : ${error.message}`, 'danger');
-    console.error('Erreur lors du téléchargement des cartes en PDF :', error);
+    showToast(`Erreur lors du téléchargement des cartes en PDF : ${error.message}`,
+      'danger');
+    console.error('Erreur lors du téléchargement des cartes en PDF :',
+      error);
   }
 }
